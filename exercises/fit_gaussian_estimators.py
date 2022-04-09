@@ -57,7 +57,7 @@ def test_multivariate_gaussian():
 
     fig3.show()
 
-    # Question 6 - Maximum likelihood
+  # Question 6 - Maximum likelihood
     form = "{:.3f}"
     max_liklihood = np.max(log_likelihood)
     helper = np.where(log_likelihood == max_liklihood)

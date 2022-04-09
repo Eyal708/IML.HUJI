@@ -1,12 +1,15 @@
+import random
 from typing import Tuple
 import numpy as np
 import pandas as pd
+import sklearn
+from sklearn.model_selection import train_test_split
 
 
-def split_train_test(X: pd.DataFrame, y: pd.Series, train_proportion: float = .25) \
+def split_train_test(X: pd.DataFrame, y: pd.Series, train_proportion: float = .75) \
         -> Tuple[pd.DataFrame, pd.Series, pd.DataFrame, pd.Series]:
     """
-    Split given sample to a training- and testing sample
+    Randomly split given sample to a training- and testing sample
 
     Parameters
     ----------
@@ -33,7 +36,17 @@ def split_train_test(X: pd.DataFrame, y: pd.Series, train_proportion: float = .2
         Responses of test samples
 
     """
-    raise NotImplementedError()
+    X.reset_index(drop=True,inplace=True)
+    y.reset_index(drop=True,inplace=True)
+    train_size = np.ceil(y.shape[0] * train_proportion)
+    train_samples = np.random.choice(y.shape[0], int(train_size), replace=False)
+    train_X = X.iloc[train_samples]
+    train_y = y.iloc[train_samples]
+    test_X = X.drop(train_samples)
+    test_y = y.drop(train_samples)
+    return train_X, train_y, test_X, test_y
+
+    # raise NotImplementedError()
 
 
 def confusion_matrix(a: np.ndarray, b: np.ndarray) -> np.ndarray:
