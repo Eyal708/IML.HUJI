@@ -31,6 +31,7 @@ class Perceptron(BaseEstimator):
             A callable to be called after each update of the model while fitting to given data
             Callable function should receive as input a Perceptron instance, current sample and current response
     """
+
     def __init__(self,
                  include_intercept: bool = True,
                  max_iter: int = 1000,
@@ -58,22 +59,36 @@ class Perceptron(BaseEstimator):
 
     def _fit(self, X: np.ndarray, y: np.ndarray) -> NoReturn:
         """
-        Fit a halfspace to to given samples. Iterate over given data as long as there exists a sample misclassified
+        Fit a halfspace to to given samples. Iterate over given samples as long as there exists a sample misclassified
         or that did not reach `self.max_iter_`
 
         Parameters
         ----------
         X : ndarray of shape (n_samples, n_features)
-            Input data to fit an estimator for
+            Input samples to fit an estimator for
 
         y : ndarray of shape (n_samples, )
-            Responses of input data to fit to
+            Responses of input samples to fit to
 
         Notes
         -----
         Fits model with or without an intercept depending on value of `self.fit_intercept_`
         """
-        raise NotImplementedError()
+        samples = Perceptron.include_intercept(X, self.include_intercept_)  # adjusts the data if needed
+        self.coefs_ = np.repeat(0, samples.shape[1])  # initialize coefficients
+        self.fitted_ = True
+        iteration = 0
+        while iteration < self.max_iter_:
+            flag = False
+            for i in range(samples.shape[0]):
+                if y[i] * np.matmul(self.coefs_, samples[i, :]) <= 0:
+                    self.coefs_ = self.coefs_ + y[i] * samples[i, :]
+                    self.callback_(self, samples[i, :], y[i])
+                    flag = True
+                    break
+            if not flag:  # no mis-classification, so we can break the loop
+                break
+            iteration += 1
 
     def _predict(self, X: np.ndarray) -> np.ndarray:
         """
@@ -89,7 +104,14 @@ class Perceptron(BaseEstimator):
         responses : ndarray of shape (n_samples, )
             Predicted responses of given samples
         """
-        raise NotImplementedError()
+        data = Perceptron.include_intercept(X, self.include_intercept_)
+        responses = []
+        for i in range(data.shape[0]):
+            if np.matmul(data[i, :], self.coefs_) < 0:
+                responses.append(-1)
+            else:
+                responses.append(1)
+        return np.array(responses)
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:
         """
@@ -109,4 +131,16 @@ class Perceptron(BaseEstimator):
             Performance under missclassification loss function
         """
         from ...metrics import misclassification_error
-        raise NotImplementedError()
+        responses = self.predict(X)
+        return misclassification_error(responses, y)
+
+    @staticmethod
+    def include_intercept(X, is_included) -> np.ndarray:
+        """
+        adjusts the data depending if we is_included is true or false.
+        if true: adds a columns of "1" to X and returns it(because we want to include an intercept
+        if false: returns X as it is(we don't want to include an intercept
+        """
+        if is_included:
+            return np.append(X, np.array([np.repeat(1, X.shape[0])]).T, axis=1)
+        return X
