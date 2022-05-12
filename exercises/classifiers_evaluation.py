@@ -55,7 +55,7 @@ def run_perceptron():
             """
             losses.append(perceptron.loss(data, response))
 
-        perceptron = Perceptron(callback=loss_callback)
+        perceptron = Perceptron(callback=loss_callback,include_intercept=False)
         perceptron.fit(data, response)
 
         # raise NotImplementedError()
@@ -143,5 +143,16 @@ def compare_gaussian_classifiers():
 if __name__ == '__main__':
     np.random.seed(0)
     run_perceptron()
-    compare_gaussian_classifiers()
-
+    # compare_gaussian_classifiers()
+    # quiz
+    X = np.array([0, 1, 2, 3, 4, 5, 6, 7]).reshape(8, 1)
+    y = np.array([0, 0, 1, 1, 1, 1, 2, 2])
+    naive = GaussianNaiveBayes()
+    naive.fit(X, y)
+    print(naive.pi_[0])
+    print(naive.mu_[1])
+    X_2 = np.array([[1, 1], [1, 2], [2, 3], [2, 4], [3, 3], [3, 4]])
+    y_2 = np.array([0, 0, 1, 1, 1, 1])
+    naive_2 = GaussianNaiveBayes()
+    naive_2.fit(X_2, y_2)
+    print(naive_2.vars_)

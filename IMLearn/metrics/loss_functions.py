@@ -36,13 +36,18 @@ def misclassification_error(y_true: np.ndarray, y_pred: np.ndarray, normalize: b
     -------
     Misclassification of given predictions
     """
-    num_of_mistakes, num_of_samples = 0, y_true.shape[0]
-    for i in range(num_of_samples):
-        if y_true[i] != y_pred[i]:
-            num_of_mistakes += 1
+    # num_of_mistakes, num_of_samples = 0, y_true.shape[0]
+    # for i in range(num_of_samples):
+    #     if y_true[i] != y_pred[i]:
+    #         num_of_mistakes += 1
+    # if normalize:
+    #     return num_of_mistakes / num_of_samples
+    # return num_of_mistakes
+    num_of_samples = y_true.shape[0]
+    loss = np.sum(np.where(y_true != y_pred, 1, 0))
     if normalize:
-        return num_of_mistakes / num_of_samples
-    return num_of_mistakes
+        return loss / num_of_samples
+    return float(loss)
 
 
 def accuracy(y_true: np.ndarray, y_pred: np.ndarray) -> float:
@@ -60,12 +65,12 @@ def accuracy(y_true: np.ndarray, y_pred: np.ndarray) -> float:
     -------
     Accuracy of given predictions
     """
-    true_predictions, num_of_samples = 0, y_true.shape[0]
-    for i in range(num_of_samples):
-        if y_pred[i] == y_true[i]:
-            true_predictions += 1
-    return true_predictions / num_of_samples
-
+    # true_predictions, num_of_samples = 0, y_true.shape[0]
+    # for i in range(num_of_samples):
+    #     if y_pred[i] == y_true[i]:
+    #         true_predictions += 1
+    # return true_predictions / num_of_samples
+    return np.sum(np.where(y_true == y_pred, 1, 0)) / y_true.shape[0]
 
 
 def cross_entropy(y_true: np.ndarray, y_pred: np.ndarray) -> float:
