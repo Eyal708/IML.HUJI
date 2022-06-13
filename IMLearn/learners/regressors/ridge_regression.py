@@ -1,7 +1,10 @@
 from __future__ import annotations
+
+import math
 from typing import NoReturn
 from ...base import BaseEstimator
 import numpy as np
+from IMLearn.learners.regressors import LinearRegression
 
 
 class RidgeRegression(BaseEstimator):
@@ -33,7 +36,6 @@ class RidgeRegression(BaseEstimator):
             `LinearRegression.fit` function.
         """
 
-
         """
         Initialize a ridge regression model
         :param lam: scalar value of regularization parameter
@@ -42,6 +44,7 @@ class RidgeRegression(BaseEstimator):
         self.coefs_ = None
         self.include_intercept_ = include_intercept
         self.lam_ = lam
+        self.estimator = LinearRegression(include_intercept)
 
     def _fit(self, X: np.ndarray, y: np.ndarray) -> NoReturn:
         """
@@ -59,7 +62,10 @@ class RidgeRegression(BaseEstimator):
         -----
         Fits model with or without an intercept depending on value of `self.include_intercept_`
         """
-        raise NotImplementedError()
+        X_lam = RidgeRegression.adjust_X(X, self.lam_)
+        y_lam = RidgeRegression.adjust_y(y, X.shape[1])
+        self.estimator.fit(X_lam, y_lam)
+        self.fitted_ = True
 
     def _predict(self, X: np.ndarray) -> np.ndarray:
         """
@@ -75,7 +81,7 @@ class RidgeRegression(BaseEstimator):
         responses : ndarray of shape (n_samples, )
             Predicted responses of given samples
         """
-        raise NotImplementedError()
+        return self.estimator.predict(X)
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:
         """
@@ -94,4 +100,16 @@ class RidgeRegression(BaseEstimator):
         loss : float
             Performance under MSE loss function
         """
-        raise NotImplementedError()
+        return self.estimator.loss(X, y)
+
+    @staticmethod
+    def adjust_X(X, lam):
+        diag = math.sqrt(lam) * np.diag(np.repeat(1, X.shape[1]))
+        X_lam = np.append(X, diag, axis=0)
+        return X_lam
+
+    @staticmethod
+    def adjust_y(y, shape):
+        zeroes = np.zeros(shape)
+        y_lam = np.append(y, zeroes, axis=0)
+        return y_lam
